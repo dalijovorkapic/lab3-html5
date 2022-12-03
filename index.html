@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html>
+<body onload="startGame()">
+    <style>
+        canvas {
+            border:1px solid #000000;
+            background-color: #f1f1f1;
+        }
+        </style>
+        
+    <script>
+        var boje = ['#e6e6ff', '#b3b3ff', '#8080ff', '#4d4dff', '#0000ff', '#0000b3'];
+        var brojac_klikova = 0;
+        var brojac_pogodaka = 0;
+        var brojac_elemenata = 1;
+	    var kockice = [];
+        const klik = {
+            x: NaN,
+            y: NaN,
+        };
+        function startGame() {
+            let broj_elemenata = Math.floor(Math.random() * (6 - 2 + 1) + 2);
+            brojac_elemenata = broj_elemenata
+            for(let i=0; i< broj_elemenata; i++)
+                kockice.push(
+                    new component(
+                        Math.random() < 0.5 ? -1*(Math.floor(Math.random()*(6 - 1 + 1) +1)) : (Math.floor(Math.random()*(6 - 1 + 1) +1)),
+                        Math.random() < 0.5 ? -1*(Math.floor(Math.random()*(6 - 1 + 1) +1)) : (Math.floor(Math.random()*(6 - 1 + 1) +1)), 
+                        boje[Math.floor(Math.random() * boje.length)]))
+            myGameArea.start();
+        }
+        var myGameArea = {
+            canvas : document.createElement("canvas"),
+            start : function() {
+                this.canvas.id = "myGameCanvas";
+                this.canvas.width = 480;
+                this.canvas.height = 270;
+                this.context = this.canvas.getContext("2d");
+                document.body.insertBefore(this.canvas, document.body.childNodes[0]);
+                this.frameNo = 0;
+                this.interval = setInterval(updateGameArea, 20);
+            },
+            stop : function() {
+                clearInterval(this.interval);
+            },
+            clear : function() {
+                this.context.clearRect(0, 0, this.canvas.width, this.canvas.height);
+            }
+        }
+
+        function component(speed_x, speed_y, color) {
+            this.width = 40;
+            this.height = 40;
+            this.speed_x = speed_x;
+            this.speed_y = speed_y;
+            this.y = Math.random() * 100;
+            this.x = Math.random() * (480 - 30 - 10) + 10;
+            this.update = function() {
+                ctx = myGameArea.context;
+                ctx.save();
+                ctx.font = "20px Arial";
+                ctx.fillText("Elementi: " +brojac_elemenata, 350, 20);
+                ctx.fillText("Klikovi: " +brojac_klikova + " | " + "Pogodci: " +brojac_pogodaka + " | ", 120, 20);
+                ctx.translate(this.x, this.y);
+                ctx.fillStyle = color;
+                ctx.fillRect(this.width / -2, this.height / -2, this.width, this.height);
+                ctx.restore();
+            }
+            this.newPos = function() {
+                nova_brzina = Math.random()*(2 - 0.5 + 1) + 0.5
+                if (this.x - this.width / 2 < 0)
+                    this.speed_x = this.speed_x > 0 ? this.speed_x +nova_brzina : (this.speed_x +nova_brzina)*(-1);
+                else if ((this.x + this.width / 2) >= myGameArea.context.canvas.width)
+                    this.speed_x = this.speed_x > 0 ? (this.speed_x +nova_brzina)*(-1) : this.speed_x +nova_brzina;
+                if (this.y - this.height / 2 < 0)
+                    this.speed_y = this.speed_y > 0 ? (this.speed_y +nova_brzina)*(-1) : this.speed_y +nova_brzina;
+                else if ((this.y + this.height / 2) >= myGameArea.context.canvas.height)
+                    this.speed_y = this.speed_y > 0 ? this.speed_y +nova_brzina : (this.speed_y +nova_brzina)*(-1);
+                this.x += this.speed_x;
+                this.y -= this.speed_y;
+            }
+
+            
+        }
+
+        function updateGameArea() {
+            myGameArea.clear();
+            kockice.forEach(kockica => {
+                kockica.newPos();
+                kockica.update();
+            })
+        }
+
+        function izbrisiKockicu() {
+            brojac_klikova ++;
+            let noveKockice = []
+            noveKockice = kockice.filter(kockica =>
+                !(klik.x > kockica.x &&
+                klik.x < kockica.x + 30 &&
+                klik.y > kockica.y &&
+                klik.y < kockica.y + 30
+                ))
+            if (noveKockice.length == kockice.length) {
+                nova_brzina = Math.random()*(2 - 0.5 + 1) + 0.5
+                noveKockice.forEach(kockica => {
+                    kockica.speed_x = kockica.speed_x > 0 ? (kockica.speed_x + nova_brzina) : (kockica.speed_x - nova_brzina)
+                    kockica.speed_y = kockica.speed_y > 0 ? (kockica.speed_y + nova_brzina) : (kockica.speed_y - nova_brzina)
+                })
+            }
+            else {
+                brojac_pogodaka ++;
+            }
+            brojac_elemenata = noveKockice.length
+            kockice = noveKockice
+        }
+
+        document.addEventListener("click", (e) => {
+            klik.x = e.x;
+            klik.y = e.y;
+            izbrisiKockicu();
+        });
+
+
+    </script>
+
+</body>
+</html>
