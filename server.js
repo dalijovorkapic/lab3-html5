@@ -11,7 +11,7 @@ const hostname = '127.0.0.1';
 app.use(express.static('/'));
 
 app.get('/*', (req, res) =>
-    res.sendFile('ind.html', {root: './'}),
+    res.sendFile('index.html', {root: './'}),
 );
 
 app.listen(port, hostname);
